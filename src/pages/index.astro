@@ -1,0 +1,138 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Concept from '../components/Concept.astro';
+import Philosophy from '../components/Philosophy.astro';
+import Marquee from '../components/Marquee.astro';
+import Products from '../components/Products.astro';
+import Village from '../components/Village.astro';
+import LineCTA from '../components/LineCTA.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout>
+  <Header />
+  <main>
+    <Hero />
+    <Concept />
+    <Philosophy />
+    <Marquee />
+    <Products />
+    <Village />
+    <LineCTA />
+  </main>
+  <Footer />
+</Layout>
+
+<script>
+  // Import jQuery (loaded via CDN in Layout)
+  const $ = (window as any).jQuery;
+
+  // Page load animation
+  window.addEventListener('load', () => {
+    const wrapper = document.getElementById('l-wrapper');
+    if (wrapper) {
+      wrapper.classList.add('is-loaded');
+
+      // Trigger hero blur-in animations after wrapper is visible
+      setTimeout(() => {
+        document.querySelectorAll('.p-hero .js-blur-in').forEach((el, i) => {
+          setTimeout(() => el.classList.add('is-visible'), i * 300);
+        });
+      }, 300);
+    }
+  });
+
+  // Scroll animations with IntersectionObserver
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px 0px -10% 0px',
+    threshold: 0.1
+  };
+
+  const scrollObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        scrollObserver.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.js-fade-up, .js-scale-in').forEach(el => {
+    scrollObserver.observe(el);
+  });
+
+  // Header show/hide on scroll
+  let lastScrollY = 0;
+  let ticking = false;
+  const header = document.getElementById('header');
+
+  function updateHeader() {
+    const currentScrollY = window.scrollY;
+
+    if (currentScrollY > 100) {
+      header?.classList.add('is-scrolled');
+    } else {
+      header?.classList.remove('is-scrolled');
+    }
+
+    if (currentScrollY > 300) {
+      if (currentScrollY < lastScrollY) {
+        header?.classList.add('is-visible');
+      } else {
+        header?.classList.remove('is-visible');
+      }
+    } else {
+      header?.classList.remove('is-visible');
+    }
+
+    lastScrollY = currentScrollY;
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(updateHeader);
+      ticking = true;
+    }
+  });
+
+  // Hamburger menu toggle
+  const hamburger = document.getElementById('hamburger');
+  const nav = document.getElementById('nav');
+
+  hamburger?.addEventListener('click', () => {
+    hamburger.classList.toggle('is-active');
+    nav?.classList.toggle('is-active');
+    document.body.classList.toggle('is-menuopen');
+  });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.querySelector((anchor as HTMLAnchorElement).getAttribute('href') || '');
+      if (target) {
+        // Close mobile menu if open
+        hamburger?.classList.remove('is-active');
+        nav?.classList.remove('is-active');
+        document.body.classList.remove('is-menuopen');
+
+        target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Hero background parallax (using jQuery)
+  if ($) {
+    $(window).on('scroll', function() {
+      const scrolled = $(window).scrollTop();
+      const heroHeight = $('.p-hero').height();
+      if (scrolled < heroHeight) {
+        $('.p-hero__bg-img').css('transform', `scale(${1.1 - (scrolled / heroHeight) * 0.1})`);
+      }
+    });
+  }
+</script>
